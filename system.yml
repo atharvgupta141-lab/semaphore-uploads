@@ -1,42 +1,39 @@
-- name: Gather and upload system info
+- name: System Info Check
   hosts: all
   become: yes
   become_user: root
   tasks:
-    - name: Gather system info
-      shell: |
-        {
-          echo "=== OS Info ==="
-          cat /etc/os-release
-          echo; echo "=== Disk Info ==="
-          lsblk
-          echo; echo "=== / Usage ==="
-          df -h /
-          echo; echo "=== RAM Info ==="
-          free -h
-          echo; echo "=== Hostname ==="
-          hostname
-          echo; echo "=== IP Address ==="
-          hostname -I
-        } > /tmp/system_info.txt
+    - name: Get OS info
+      command: cat /etc/os-release
+      register: os_info
 
-    - name: Clone GitHub repo
-      git:
-        repo: https://github.com/atharvgupta141-lab/semaphore-uploads.git
-        dest: /tmp/semaphore-uploads
-        clone: yes
-        update: yes
+    - name: Get total disk size
+      command: lsblk -b -o NAME,SIZE | grep disk
+      register: disk_info
 
-    - name: Copy system info to repo
-      copy:
-        src: /tmp/system_info.txt
-        dest: /tmp/semaphore-uploads/system_info.txt
+    - name: Get root partition usage
+      command: df -h /
+      register: root_usage
 
-    - name: Commit system info
-      shell: |
-        cd /tmp/semaphore-uploads
-        git config user.name "ansible-bot"
-        git config user.email "ansible@local"
-        git add system_info.txt
-        git commit -m "Upload system info"
-        git push
+    - name: Get RAM info
+      command: free -h
+      register: ram_info
+
+    - name: Get hostname
+      command: hostname
+      register: hostname_info
+
+    - name: Get IP address
+      command: hostname -I
+      register: ip_info
+
+    - name: Print all info
+      debug:
+        msg:
+          - "OS: {{ os_info.stdout }}"
+          - "Disk: {{ disk_info.stdout }}"
+          - "/ Usage: {{ root_usage.stdout }}"
+          - "RAM: {{ ram_info.stdout }}"
+          - "Hostname: {{ hostname_info.stdout }}"
+          - "IP: {{ ip_info.stdout }}"
+
