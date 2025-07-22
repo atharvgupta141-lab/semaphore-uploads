@@ -1,0 +1,42 @@
+- name: Gather and upload system info
+  hosts: all
+  become: yes
+  become_user: root
+  tasks:
+    - name: Gather system info
+      shell: |
+        {
+          echo "=== OS Info ==="
+          cat /etc/os-release
+          echo; echo "=== Disk Info ==="
+          lsblk
+          echo; echo "=== / Usage ==="
+          df -h /
+          echo; echo "=== RAM Info ==="
+          free -h
+          echo; echo "=== Hostname ==="
+          hostname
+          echo; echo "=== IP Address ==="
+          hostname -I
+        } > /tmp/system_info.txt
+
+    - name: Clone GitHub repo
+      git:
+        repo: https://github.com/atharvgupta141-lab/semaphore-uploads.git
+        dest: /tmp/semaphore-uploads
+        clone: yes
+        update: yes
+
+    - name: Copy system info to repo
+      copy:
+        src: /tmp/system_info.txt
+        dest: /tmp/semaphore-uploads/system_info.txt
+
+    - name: Commit system info
+      shell: |
+        cd /tmp/semaphore-uploads
+        git config user.name "ansible-bot"
+        git config user.email "ansible@local"
+        git add system_info.txt
+        git commit -m "Upload system info"
+        git push
