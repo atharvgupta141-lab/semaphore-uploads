@@ -8,7 +8,7 @@
       register: os_info
 
     - name: Get total disk size
-      command: lsblk -b -o NAME,SIZE | grep disk
+      shell: lsblk -b -o NAME,SIZE | grep disk
       register: disk_info
 
     - name: Get root partition usage
@@ -36,4 +36,3 @@
           - "RAM: {{ ram_info.stdout }}"
           - "Hostname: {{ hostname_info.stdout }}"
           - "IP: {{ ip_info.stdout }}"
-
