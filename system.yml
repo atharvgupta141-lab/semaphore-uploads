@@ -8,7 +8,7 @@
       register: os_info
 
     - name: Get total disk size
-      shell: lsblk -b -o NAME,SIZE | grep disk
+      shell: lsblk -b -o NAME,TYPE,SIZE | awk '$2=="disk"{print $1,$3}'
       register: disk_info
       changed_when: false
       ignore_errors: yes
