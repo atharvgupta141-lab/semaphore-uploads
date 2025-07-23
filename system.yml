@@ -10,6 +10,8 @@
     - name: Get total disk size
       shell: lsblk -b -o NAME,SIZE | grep disk
       register: disk_info
+      changed_when: false
+      ignore_errors: yes
 
     - name: Get root partition usage
       command: df -h /
